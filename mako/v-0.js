@@ -1,10 +1,10 @@
 const CryptoJS = require("crypto-js");
 const express = require("express");
 const bodyParser = require('body-parser');
-const WebSocket = require("webSocket");
+const WebSocket = require("ws");
 
-const http_port = process.env.HTTP_PORT || 3000;
-const p2p_port = process.env.P2P_PORT || 6000;
+const http_port = process.env.HTTP_PORT || 3005;
+const p2p_port = process.env.P2P_PORT || 6005;
 const initialPeers = process.env.PEERS ? process.env.PEERS.split(',') : [];
 
 class Block {
@@ -26,16 +26,18 @@ const MessageType = {
 };
 
 const getGenesisBlock = () => {
-    return new Block(0, "0", 1465154705, "my genesis block!!", "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7");
+    return new Block(0, "0", 1465154705, "Jenova block", "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7");
 };
 
 let blockchain = [getGenesisBlock()];
 
 const initHttpServer = () => {
     const app = express();
-    app.use(bodyParser.json);
+    app.use(bodyParser.json());
 
-    app.get('/blocks', (req, res) => res.send(JSON.stringify(blockchain)));
+    app.get('/', (req, res) => res.status(200).send('<p>g2g</p>'));
+
+    app.get('/blocks', (req, res) => res.status(200).send(JSON.stringify(blockchain)));
     app.post('/mineBlock', (req, res) => {
         const newBlock = generateNextBlock(req.body.data);
         addBlock(newBlock);
@@ -50,7 +52,9 @@ const initHttpServer = () => {
         connectToPeers([req.body.peer]);
         res.send();
     });
-    app.listen(http_port, () => console.log('Listening http on port: ' + http_port));
+    app.listen(http_port, () => {
+        console.log(`listening at http://localhost:${http_port}`);
+    });
 
 };
 
